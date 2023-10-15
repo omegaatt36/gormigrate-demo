@@ -1,0 +1,45 @@
+name: Tests
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "**.go"
+      - Makefile
+      - go.sum
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Perform tests(GoLang ${{ matrix.version_go }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version_go: ["1.20"]
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USERNAME: postgres
+          POSTGRES_PASSWORD: password1
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup GoLang
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.version_go }}
+      - name: Get dependencies
+        run: |
+          go get -v -d ./...
+      - name: Running tests
+        run: |
+          . config/local-ci.sh
+          go test ./...
