@@ -23,7 +23,8 @@ func main() {
 
 	mg := database.NewMigrator(database.Rdb,
 		migration.InitModelList,
-		migration.MigrationList)
+		migration.MigrationList,
+	)
 
 	if rollbackTo != "" {
 		if err := rollback(mg, rollbackTo); err != nil {
